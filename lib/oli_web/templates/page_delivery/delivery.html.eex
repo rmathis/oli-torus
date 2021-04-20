@@ -9,6 +9,29 @@
 <script>
   window.userToken = "<%= assigns[:user_token] %>";
 
+  function openFullscreen(elem) {
+    if (elem.requestFullscreen) {
+      elem.requestFullscreen();
+    } else if (elem.webkitRequestFullscreen) { /* Safari */
+      elem.webkitRequestFullscreen();
+    } else if (elem.msRequestFullscreen) { /* IE11 */
+      elem.msRequestFullscreen();
+    }
+  }
+
+  function toggleFullScreen() {
+
+    if (!document.fullscreenElement) {
+      const e = document.getElementById('delivery_container');
+      openFullscreen(e);
+
+    } else {
+      if (document.exitFullscreen) {
+        document.exitFullscreen();
+      }
+    }
+  }
+
   const params = {
     resourceId: <%= @resource_id %>,
     sectionSlug: "<%= @section_slug %>",
@@ -21,4 +44,8 @@
   };
 
   window.oliMountApplication(document.getElementById('delivery_container'), params);
+
+
 </script>
+
+<button type="button" class="btn btn-outline-success" onClick="toggleFullScreen()">Full Screen</button>
