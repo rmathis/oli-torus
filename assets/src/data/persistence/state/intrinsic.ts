@@ -77,12 +77,49 @@ export const writePartAttemptState = async (
   return { result };
 };
 
-export const createActivityAttempt = async (sectionSlug: string, attemptGuid: string) => {
+export const createNewActivityAttempt = async (
+  sectionSlug: string,
+  attemptGuid: string,
+  seedResponsesWithPrevious = false,
+): Promise<any> => {
+  // type ActivityState ? this is in components currently
   const method = 'POST';
-  const url = `/api/v1/state/course/${sectionSlug}/activity_attempt/${attemptGuid}`;
+  const url = `/state/course/${sectionSlug}/activity_attempt/${attemptGuid}`;
   const result = await makeRequest({
     url,
     method,
+  });
+  const newAttempt: any = result;
+  // BS: this should likely be moved to back end to save a trip
+  if (seedResponsesWithPrevious) {
+    const [previousAttempt] = await getBulkAttemptState(sectionSlug, [attemptGuid]);
+    previousAttempt.parts.forEach((prevPart: any) => {
+      const newPart = newAttempt.parts.find((p: any) => p.partId === prevPart.partId);
+      if (newPart) {
+        newPart.response = prevPart.response;
+      }
+    });
+    const partInputs = (newAttempt.parts as any[]).map(({ attemptGuid, response }) => ({
+      attemptGuid,
+      response,
+    }));
+    await writeActivityAttemptState(sectionSlug, newAttempt.attemptGuid, partInputs);
+  }
+  return newAttempt;
+};
+
+export const evalActivityAttempt = async (
+  sectionSlug: string,
+  attemptGuid: string,
+  partInputs: any[], // TODO: type for PartInput / PartResponse
+) => {
+  const method = 'PUT';
+  const url = `/state/course/${sectionSlug}/activity_attempt/${attemptGuid}`;
+  const body = JSON.stringify({ partInputs });
+  const result = await makeRequest({
+    url,
+    method,
+    body,
   });
   return { result };
 };

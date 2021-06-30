@@ -1,5 +1,7 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { RootState } from 'apps/delivery/store/rootReducer';
+import { PartResponse } from 'components/activities/types';
+import { evalActivityAttempt } from 'data/persistence/state/intrinsic';
 import { check } from '../../../../../../adaptivity/rules-engine';
 import {
   ApplyStateOperation,
@@ -7,9 +9,13 @@ import {
   defaultGlobalEnv,
   getEnvState,
 } from '../../../../../../adaptivity/scripting';
+import { createActivityAttempt } from '../../attempt/actions/createActivityAttempt';
 import { selectAll, selectExtrinsicState, setExtrinsicState } from '../../attempt/slice';
-import { selectCurrentActivityTree } from '../../groups/selectors/deck';
-import { selectPreviewMode } from '../../page/slice';
+import {
+  selectCurrentActivityTree,
+  selectCurrentActivityTreeAttemptState,
+} from '../../groups/selectors/deck';
+import { selectPreviewMode, selectSectionSlug } from '../../page/slice';
 import { AdaptivitySlice, setLastCheckResults, setLastCheckTriggered } from '../slice';
 
 export const triggerCheck = createAsyncThunk(
@@ -17,6 +23,10 @@ export const triggerCheck = createAsyncThunk(
   async (options: { activityId: string; customRules?: any[] }, { dispatch, getState }) => {
     const rootState = getState() as RootState;
     const isPreviewMode = selectPreviewMode(rootState);
+    const sectionSlug = selectSectionSlug(rootState);
+    const currentActivityTreeAttempts = selectCurrentActivityTreeAttemptState(rootState) || [];
+    const currentAttempt = currentActivityTreeAttempts[currentActivityTreeAttempts?.length - 1];
+    const currentActivityAttemptGuid = currentAttempt?.attemptGuid || '';
 
     const currentActivityTree = selectCurrentActivityTree(rootState);
     if (!currentActivityTree || !currentActivityTree.length) {
@@ -75,7 +85,15 @@ export const triggerCheck = createAsyncThunk(
       attempt.parts.forEach((part: any) => {
         if (part.response) {
           Object.keys(part.response).forEach((key) => {
-            collect[part.response[key].path] = part.response[key].value;
+            const input_response = part.response[key];
+            if (!input_response) {
+              return;
+            }
+            const { path, value } = input_response;
+            if (!path) {
+              return;
+            }
+            collect[path] = value;
           });
         }
       });
@@ -108,6 +126,7 @@ export const triggerCheck = createAsyncThunk(
     };
 
     let checkResult;
+    let isCorrect = false;
     // if preview mode, gather up all state and rules from redux
     if (isPreviewMode) {
       const currentRules = JSON.parse(JSON.stringify(currentActivity?.authoring?.rules || []));
@@ -116,7 +135,9 @@ export const triggerCheck = createAsyncThunk(
       const rulesToCheck = customRules.length > 0 ? customRules : currentRules;
 
       /* console.log('PRE CHECK RESULT', { currentActivity, currentRules, stateSnapshot }); */
-      checkResult = await check(stateSnapshot, rulesToCheck);
+      const check_call_result = await check(stateSnapshot, rulesToCheck);
+      checkResult = check_call_result.results;
+      isCorrect = check_call_result.correct;
       /* console.log('CHECK RESULT', {
         currentActivity,
         currentRules,
@@ -124,17 +145,33 @@ export const triggerCheck = createAsyncThunk(
         stateSnapshot,
       }); */
     } else {
-      // server mode (delivery) TODO
-      checkResult = [
-        {
-          type: 'correct',
-          params: {
-            actions: [{ params: { target: 'next' }, type: 'navigation' }],
-            order: 1,
-            correct: true,
-          },
-        },
-      ];
+      console.log('CHECKING', { sectionSlug, currentActivityTreeAttempts });
+
+      if (!currentActivityAttemptGuid) {
+        console.error('not current attempt, cannot eval', { currentActivityTreeAttempts });
+        return;
+      }
+
+      const partResponses: PartResponse[] =
+        currentAttempt?.parts.map((p) => {
+          return { attemptGuid: p.attemptGuid, response: { input: p.response || null } };
+        }) || [];
+
+      const evalResult = await evalActivityAttempt(
+        sectionSlug,
+        currentActivityAttemptGuid,
+        partResponses,
+      );
+      console.log('EVAL RESULT', { evalResult });
+      checkResult = (evalResult.result as any).actions;
+      isCorrect = checkResult.every((action: any) => action.params.correct);
+    }
+
+    if (!isCorrect) {
+      console.log('Incorrect, time for new attempt');
+      await dispatch(
+        createActivityAttempt({ sectionSlug, attemptGuid: currentActivityAttemptGuid }),
+      );
     }
 
     await dispatch(setLastCheckResults({ results: checkResult }));

@@ -13,6 +13,119 @@ defmodule Oli.Delivery.Attempts.ActivityLifecycle.Evaluate do
   import Oli.Delivery.Attempts.Core
   import Oli.Delivery.Attempts.ActivityLifecycle.Persistence
 
+  require Logger
+
+  def evaluate_activity(section_slug, activity_attempt_guid, part_inputs) do
+    %ActivityAttempt{
+      transformed_model: transformed_model,
+      resource_attempt: resource_attempt
+    } =
+      get_activity_attempt_by(attempt_guid: activity_attempt_guid)
+      |> Repo.preload([:resource_attempt])
+
+    {:ok, %Model{rules: rules}} = Model.parse(transformed_model)
+
+    if is_list(rules) do
+      evaluate_from_rules(section_slug, resource_attempt, activity_attempt_guid, part_inputs, rules)
+    else
+      evaluate_from_input(section_slug, activity_attempt_guid, part_inputs)
+    end
+  end
+
+  def evaluate_from_rules(section_slug, resource_attempt, activity_attempt_guid, part_inputs, rules) do
+    # need to get all of the extrinsic (resource_attempt state)
+    extrinsic_state = resource_attempt.state
+
+    # need to get *all* of the activity attempts state (part responses saved thus far)
+    attempt_hierarchy = Oli.Delivery.Attempts.PageLifecycle.Hierarchy.get_latest_attempts(resource_attempt.id)
+
+    response_state = Enum.reduce(Map.values(attempt_hierarchy), %{}, fn {_activity_attempt, part_attempts}, m ->
+      part_responses = Enum.reduce(Map.values(part_attempts), %{}, fn pa, acc ->
+        case pa.response do
+          "" -> acc
+          nil -> acc
+          _ ->
+            part_values = Enum.reduce(Map.values(pa.response), %{}, fn pv, acc1 ->
+              case pv do
+                nil -> acc1
+                "" -> acc1
+                _ -> Map.put(acc1, Map.get(pv, "path"), Map.get(pv, "value"))
+              end
+            end)
+            Map.merge(acc, part_values)
+        end
+      end)
+      Map.merge(m, part_responses)
+    end)
+
+    # need to combine with part_inputs as latest
+    input_state = Enum.reduce(part_inputs, %{}, fn pi, acc ->
+      case pi.input.input do
+        "" -> acc
+        nil -> acc
+        _ ->
+          inputs = Enum.reduce(Map.values(pi.input.input), %{}, fn input, acc1 ->
+            case input do
+              nil -> acc1
+              "" -> acc1
+              _ ->
+                path = Map.get(input, "path")
+                local_path = Enum.at(Enum.take(String.split(path, "|"), -1), 0, path)
+                value = Map.get(input, "value")
+                Map.put(acc1, local_path, value)
+            end
+          end)
+          Map.merge(acc, inputs)
+      end
+    end)
+
+    attempt_state = Map.merge(response_state, extrinsic_state)
+    state = Map.merge(input_state, attempt_state)
+
+    # Logger.debug("***************************PART INPUTS #{Jason.encode!(part_inputs)}")
+
+    # Logger.debug("eval rules: #{Jason.encode!(rules)}")
+    # Logger.debug("eval state #{Jason.encode!(state)}")
+
+    # nodejs then evaluates that and returns actions
+    checkResults = case NodeJS.call({"rules", :check}, [state, rules]) do
+      {:ok, results} -> results
+      _ -> nil # FIXME return early from function with error?
+    end
+
+    isCorrect = Map.get(checkResults, "correct", false)
+    results = Map.get(checkResults, "results")
+
+    score = if isCorrect do
+      1
+    else
+      0
+    end
+
+    # generate client_evaluations based on result correctness (score 1 or 0)
+    client_evaluations =
+      Enum.map(part_inputs, fn pi ->
+        %{
+          attempt_guid: pi.attempt_guid,
+          client_evaluation: %ClientEvaluation{
+            input: pi.input,
+            score: score,
+            out_of: 1,
+            feedback: nil
+          }
+        }
+      end)
+
+    Logger.debug("EVAL *************************************************\n #{Jason.encode!(client_evaluations)}")
+
+    case apply_client_evaluation(section_slug, activity_attempt_guid, client_evaluations) do
+      {:ok, _} -> Logger.debug("EVAL WAS SUCCESSFUL!*********************")
+      {:error, msg} -> Logger.debug("EVAL UNSUCCESSFUL :( ************************************\nMSG: #{msg}")
+    end
+
+    {:ok, results}
+  end
+
   @doc """
   Processes a student submission for some number of parts for the given
   activity attempt guid.  If this collection of part attempts completes the activity
