@@ -34,12 +34,12 @@ export const createCorrectRule = createAsyncThunk(
       },
     };
 
-    // when creating a rule it should always be for use in an activity
+    /* // when creating a rule it should always be for use in an activity
     const activity = selectActivityById(getState() as any, activityId);
     const modifiedActivity = JSON.parse(JSON.stringify(activity));
     // need to ensure this path exists?
     modifiedActivity.model.authoring.rules.push(rule);
-    await dispatch(upsertActivity({ activity: modifiedActivity }));
+    await dispatch(upsertActivity({ activity: modifiedActivity })); */
 
     return rule;
   },
@@ -71,12 +71,12 @@ export const createIncorrectRule = createAsyncThunk(
       },
     };
 
-    // when creating a rule it should always be for use in an activity
+    /* // when creating a rule it should always be for use in an activity
     const activity = selectActivityById(getState() as any, activityId);
     const modifiedActivity = JSON.parse(JSON.stringify(activity));
     // need to ensure this path exists?
     modifiedActivity.model.authoring.rules.push(rule);
-    await dispatch(upsertActivity({ activity: modifiedActivity }));
+    await dispatch(upsertActivity({ activity: modifiedActivity })); */
 
     return rule;
   },

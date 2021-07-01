@@ -1,25 +1,28 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
-import guid from 'utils/guid';
+import { create, Created } from 'data/persistence/activity';
 import {
   ActivitiesSlice,
   IActivity,
   upsertActivity,
 } from '../../../../delivery/store/features/activities/slice';
+import { selectProjectSlug } from '../../app/slice';
 import { createSimpleText } from '../templates/simpleText';
 import { createCorrectRule, createIncorrectRule } from './rules';
 
 export const createNew = createAsyncThunk(
   `${ActivitiesSlice}/createNew`,
-  async (_, { dispatch, getState }) => {
+  async (payload: any = {}, { dispatch, getState }) => {
     const rootState = getState() as any;
+    const projectSlug = selectProjectSlug(rootState);
     // how to choose activity type? for now hard code to oli_adaptive?
+    const { activityTypeSlug = 'oli_adaptive' } = payload;
+
     // should populate with a template
     const activity: IActivity = {
       type: 'activity',
-      typeSlug: 'oli_adaptive',
-      id: `new_activity_${guid()}`,
+      typeSlug: activityTypeSlug,
       title: 'New Activity',
-      objectives: {}, // should populate with some from page?
+      objectives: { attached: [] }, // should populate with some from page?
       model: {
         authoring: {
           parts: [],
@@ -58,11 +61,24 @@ export const createNew = createAsyncThunk(
       },
     };
 
+    const defaultCorrect = await dispatch(createCorrectRule({ isDefault: true }));
+
+    const defaultIncorrect = await dispatch(createIncorrectRule({ isDefault: true }));
+
+    activity.model.authoring.rules.push(defaultCorrect, defaultIncorrect);
+
+    const createResults = await create(
+      projectSlug,
+      activityTypeSlug,
+      activity.model,
+      activity.objectives.attached,
+    );
+
+    activity.id = (createResults as Created).resourceId;
+    activity.activity_id = (createResults as Created).resourceId;
+    activity.activitySlug = (createResults as Created).revisionSlug;
+
     await dispatch(upsertActivity({ activity }));
-
-    await dispatch(createCorrectRule({ isDefault: true, activityId: activity.id }));
-
-    await dispatch(createIncorrectRule({ isDefault: true, activityId: activity.id }));
 
     return activity;
   },

@@ -50,17 +50,18 @@ export const initializeFromContext = createAsyncThunk(
       const newSequence = children.map((childActivity) => {
         const entry = {
           type: 'activity-reference',
-          activitySlug: childActivity.id,
+          resource_id: childActivity.activity_id,
+          activitySlug: childActivity.activitySlug,
           custom: {
-            sequenceId: `${childActivity.id}_${guid()}`,
-            sequenceName: childActivity.title || childActivity.id,
+            sequenceId: `aa_${guid()}`,
+            sequenceName: childActivity.title || childActivity.activitySlug,
           },
         };
         return entry;
       });
       const { payload: newGroup } = await dispatch(createNewGroup({ children: newSequence }));
 
-      // write model to server now?
+      // write model to server now or else the above created activity will be orphaned
       pageModel = [newGroup];
     }
 
@@ -85,6 +86,6 @@ export const initializeFromContext = createAsyncThunk(
 
     // TODO: some initial creation if blank
     const sequence = selectSequence(getState() as any);
-    await dispatch(setCurrentActivityId({ activityId: sequence[0]?.activitySlug }));
+    await dispatch(setCurrentActivityId({ activityId: sequence[0]?.custom.sequenceId }));
   },
 );
