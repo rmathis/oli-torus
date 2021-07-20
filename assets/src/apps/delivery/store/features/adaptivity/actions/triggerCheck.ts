@@ -125,12 +125,15 @@ export const triggerCheck = createAsyncThunk(
       isCorrect = check_call_result.correct;
       score = check_call_result.score;
       outOf = check_call_result.out_of;
-      /* console.log('CHECK RESULT', {
+      console.log('CHECK RESULT', {
+        isCorrect,
+        score,
+        outOf,
         currentActivity,
         currentRules,
         checkResult,
         localizedSnapshot,
-      }); */
+      });
     } else {
       /* console.log('CHECKING', {
         sectionSlug,

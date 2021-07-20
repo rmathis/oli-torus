@@ -178,12 +178,20 @@ const DeckLayoutFooter: React.FC = () => {
         return globalOp;
       });
 
-      const mutateResults = bulkApplyState(mutationsModified, defaultGlobalEnv);
+      // filter out any mutations that want to modify the session.currentQuestionScore
+      // because the rules engine check method is already handling the score
+      const mutationsToApply = mutationsModified.filter(
+        (op: any) => !(op.target.indexOf('session.currentQuestionScore') === 0),
+      );
+      const mutateResults = bulkApplyState(
+        mutationsToApply,
+        defaultGlobalEnv,
+      );
       // should respond to scripting errors?
       console.log('MUTATE ACTIONS', {
         mutateResults,
         mutationsModified,
-        score: getValue('session.tutorialScore', defaultGlobalEnv) || 0,
+        score: getValue('session.currentQuestionScore', defaultGlobalEnv) || 0,
       });
 
       const latestSnapshot = getLocalizedStateSnapshot(
@@ -383,7 +391,7 @@ const DeckLayoutFooter: React.FC = () => {
         showCheckBtn={currentActivity?.custom?.showCheckBtn}
       />
       <div className="feedbackContainer rowRestriction" style={{ top: 525 }}>
-        <div className={`bottomContainer fixed ${!displayFeedback?'minimized': ''}`}>
+        <div className={`bottomContainer fixed ${!displayFeedback ? 'minimized' : ''}`}>
           <button
             onClick={checkFeedbackHandler}
             className={displayFeedbackIcon ? 'toggleFeedbackBtn' : 'toggleFeedbackBtn displayNone'}

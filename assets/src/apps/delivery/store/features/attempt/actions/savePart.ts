@@ -41,9 +41,19 @@ export const savePartState = createAsyncThunk(
       }
     }
 
-    // update scripting env with latest values
-    const assignScript = getAssignScript(response);
+    // need to write the "local" version of every part as well to scripting so that
+    // any checks (mutate state, etc) are available
+    // TODO: apply state in a sub env and pass as locals instead!
+    const locals = Object.keys(response).reduce((acc: Record<string, any>, key) => {
+      const value = response[key];
+      if (value.id.indexOf('stage') === 0) {
+        acc[value.id] = value.value;
+      }
+      return acc;
+    }, {});
+    const assignScript = getAssignScript({ ...response, ...locals });
     const { result: scriptResult } = evalScript(assignScript, defaultGlobalEnv);
+    console.log('SAVE PART SCRIPTING', { response, locals, assignScript, scriptResult });
 
     // in preview mode we don't write to server, so we're done
     if (isPreviewMode) {
@@ -64,7 +74,7 @@ export const savePartStateToTree = createAsyncThunk(
     const rootState = getState() as RootState;
 
     const attemptRecord = selectById(rootState, attemptGuid);
-    const partId = attemptRecord?.parts.find(p => p.attemptGuid === partAttemptGuid)?.partId;
+    const partId = attemptRecord?.parts.find((p) => p.attemptGuid === partAttemptGuid)?.partId;
     if (!partId) {
       throw new Error('cannot find the partId to update');
     }
