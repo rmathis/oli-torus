@@ -46,8 +46,14 @@ export const savePartState = createAsyncThunk(
     // TODO: apply state in a sub env and pass as locals instead!
     const locals = Object.keys(response).reduce((acc: Record<string, any>, key) => {
       const value = response[key];
-      if (value.id.indexOf('stage') === 0) {
-        acc[value.id] = value.value;
+      const valueIsObject = value && value.constructor && value.constructor === Object;
+      if (valueIsObject) {
+        if (value.path) {
+          const key = value.path.split('|')[1];
+          if (key && key.indexOf('stage') === 0) {
+            acc[key] = value.value;
+          }
+        }
       }
       return acc;
     }, {});
