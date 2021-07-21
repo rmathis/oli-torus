@@ -63,11 +63,13 @@ defmodule Oli.Delivery.Attempts.ActivityLifecycle.Evaluate do
     state = assemble_full_adaptive_state(resource_attempt, part_inputs)
 
     encodeResults = true
+    Logger.debug("Checking State: #{Jason.encode!(state)}")
+    Logger.debug("Checking Rules: #{Jason.encode!(rules)}")
     case NodeJS.call({"rules", :check}, [state, rules, scoringContext, encodeResults]) do
       {:ok, check_results} ->
         # Logger.debug("Check RESULTS: #{check_results}")
         decoded = Base.decode64!(check_results)
-        # Logger.debug("Decoded: #{decoded}")
+        Logger.debug("Check Results Decoded: #{decoded}")
         decodedResults = Poison.decode!(decoded)
 
         score = decodedResults["score"]
