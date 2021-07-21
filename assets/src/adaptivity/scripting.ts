@@ -193,7 +193,9 @@ export const applyState = (
       break;
   }
   const result = evalScript(script, env);
-  console.log('APPLY STATE RESULTS: ', { script, result });
+  if (result.result !== null) {
+    console.warn('APPLY STATE RESULTS: ', { script, result });
+  }
   return result;
 };
 

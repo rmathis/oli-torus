@@ -254,9 +254,12 @@ export const check = async (
   const successEvents = checkResult.events.sort((a, b) => a.params?.order - b.params?.order);
 
   // if every event is correct excluding the default wrong, then we are definitely correct
-  const defaultWrong = successEvents.find((e) => e.params?.default && !e.params?.correct);
+  let defaultWrong = successEvents.find((e) => e.params?.default && !e.params?.correct);
   if (!defaultWrong) {
     console.warn('no default wrong found, there should always be one!');
+    // we should never actually get here, because the rules should be implanted earlier,
+    // however, in case we still do, use this because it's better than nothing
+    defaultWrong = defaultWrongRule.event;
   }
   resultEvents = successEvents.filter((evt) => evt !== defaultWrong);
   const isCorrect = resultEvents.every((evt) => evt.params?.correct);
