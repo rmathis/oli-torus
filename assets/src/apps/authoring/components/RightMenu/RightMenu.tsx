@@ -16,6 +16,7 @@ import { updateSequenceItemFromActivity } from '../../store/groups/layouts/deck/
 import { savePage } from '../../store/page/actions/savePage';
 import { selectState as selectPageState, updatePage } from '../../store/page/slice';
 import { selectCurrentSelection, setCurrentSelection } from '../../store/parts/slice';
+import { convertJanusToQuill } from '../EditingCanvas/TextFlowHelpers';
 import AccordionTemplate from '../PropertyEditor/custom/AccordionTemplate';
 import ColorPickerWidget from '../PropertyEditor/custom/ColorPickerWidget';
 import CustomFieldTemplate from '../PropertyEditor/custom/CustomFieldTemplate';
@@ -331,16 +332,19 @@ const RightMenu: React.FC<any> = () => {
 
   const [showTextModal, setShowTextModal] = useState(false);
 
+  const [textDelta, setTextDelta] = useState<any>(null);
   const fakeValue = `<div id="a:98137:q:1535559999043:482:2" data-janus-type="janus-text-flow" class="" style="position: absolute; top: 190px; left: 330px; z-index: 2; overflow-wrap: break-word; line-height: inherit; width: 340px; border-width: 0.1px; border-style: solid; border-color: rgba(255, 255, 255, 0); background-color: rgba(255, 255, 255, 0);"><p style="direction:ltr; text-align:start; text-indent:0px; width:340px; display:block;"><span style="baseline-shift:0; color:rgb(51, 51, 51); dominant-baseline:auto; font-family:Arial; font-size:16px; font-style:normal; font-weight:normal; line-height:120%; text-decoration:none;">This lesson is inspired by actual events in western Europe during the Middle Ages and Renaissance Era. </span></p><p style="direction:ltr; text-align:start; text-indent:0px; width:340px; display:block;"><span style="baseline-shift:0; dominant-baseline:auto; font-family:Arial; font-size:16px; font-style:normal; font-weight:normal; line-height:120%; text-decoration:none;">&nbsp;</span></p><p style="direction:ltr; text-align:start; text-indent:0px; width:340px; display:block;"><span style="baseline-shift:0; dominant-baseline:auto; font-family:Arial; font-size:16px; font-style:normal; font-weight:normal; line-height:120%; text-decoration:none;">During this time, new inventions and discoveries changed the world nearly every day.</span></p><p style="direction:ltr; text-align:start; text-indent:0px; width:340px; display:block;"><span style="baseline-shift:0; dominant-baseline:auto; font-family:Arial; font-size:16px; font-style:normal; font-weight:normal; line-height:120%; text-decoration:none;">&nbsp;</span></p><p style="direction:ltr; text-align:start; text-indent:0px; width:340px; display:block;"><span style="baseline-shift:0; dominant-baseline:auto; font-family:Arial; font-size:16px; font-style:normal; font-weight:normal; line-height:120%; text-decoration:none;">We’ve included pictures and paintings of real people and key places to help you feel part of the time and place. As you learn about eclipses, take some time to imagine yourself as a part of this unique time in history.</span></p><p style="direction:ltr; text-align:start; text-indent:0px; width:340px; display:block;"><span style="baseline-shift:0; color:rgb(51, 51, 51); dominant-baseline:auto; font-family:Arial; font-size:16px; font-style:normal; font-weight:normal; line-height:120%; text-decoration:none;">&nbsp;</span></p></div>`;
 
-  const fakeDelta = {
-    ops: [
-      {
-        insert:
-          'This lesson is inspired by actual events in western Europe during the Middle Ages and Renaissance Era. \nDuring this time, new inventions and discoveries changed the world nearly every day.\nWe’ve included pictures and paintings of real people and key places to help you feel part of the time and place. As you learn about eclipses, take some time to imagine yourself as a part of this unique time in history.\n',
-      },
-    ],
-  };
+  useEffect(() => {
+    if (!currentComponentData) {
+      return;
+    }
+    if (currentComponentData.type === 'janus-text-flow') {
+      const delta = convertJanusToQuill(currentComponentData.custom.nodes);
+      console.log('DELTA FORCE', delta);
+      setTextDelta(delta);
+    }
+  }, [currentComponentData]);
 
   return (
     <Tabs
@@ -386,7 +390,7 @@ const RightMenu: React.FC<any> = () => {
               </Modal.Header>
               <Modal.Body>
                 <ReactQuill
-                  defaultValue={fakeDelta}
+                  defaultValue={textDelta}
                   onChange={(content, delta, source, editor) => {
                     console.log('quill changes', { content, delta, source, editor });
                   }}
