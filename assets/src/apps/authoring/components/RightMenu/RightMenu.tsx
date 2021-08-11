@@ -1,7 +1,8 @@
 import { JSONSchema7 } from 'json-schema';
 import { debounce, isEqual } from 'lodash';
 import React, { useCallback, useEffect, useState } from 'react';
-import { Button, ButtonGroup, ButtonToolbar, Tab, Tabs } from 'react-bootstrap';
+import { Button, ButtonGroup, ButtonToolbar, Modal, Tab, Tabs } from 'react-bootstrap';
+import ReactQuill from 'react-quill';
 import { useDispatch, useSelector } from 'react-redux';
 import { clone } from 'utils/common';
 import {
@@ -328,6 +329,19 @@ const RightMenu: React.FC<any> = () => {
     dispatch(setRightPanelActiveTab({ rightPanelActiveTab: RightPanelTabs.SCREEN }));
   }, [currentPartSelection, currentActivity]);
 
+  const [showTextModal, setShowTextModal] = useState(false);
+
+  const fakeValue = `<div id="a:98137:q:1535559999043:482:2" data-janus-type="janus-text-flow" class="" style="position: absolute; top: 190px; left: 330px; z-index: 2; overflow-wrap: break-word; line-height: inherit; width: 340px; border-width: 0.1px; border-style: solid; border-color: rgba(255, 255, 255, 0); background-color: rgba(255, 255, 255, 0);"><p style="direction:ltr; text-align:start; text-indent:0px; width:340px; display:block;"><span style="baseline-shift:0; color:rgb(51, 51, 51); dominant-baseline:auto; font-family:Arial; font-size:16px; font-style:normal; font-weight:normal; line-height:120%; text-decoration:none;">This lesson is inspired by actual events in western Europe during the Middle Ages and Renaissance Era. </span></p><p style="direction:ltr; text-align:start; text-indent:0px; width:340px; display:block;"><span style="baseline-shift:0; dominant-baseline:auto; font-family:Arial; font-size:16px; font-style:normal; font-weight:normal; line-height:120%; text-decoration:none;">&nbsp;</span></p><p style="direction:ltr; text-align:start; text-indent:0px; width:340px; display:block;"><span style="baseline-shift:0; dominant-baseline:auto; font-family:Arial; font-size:16px; font-style:normal; font-weight:normal; line-height:120%; text-decoration:none;">During this time, new inventions and discoveries changed the world nearly every day.</span></p><p style="direction:ltr; text-align:start; text-indent:0px; width:340px; display:block;"><span style="baseline-shift:0; dominant-baseline:auto; font-family:Arial; font-size:16px; font-style:normal; font-weight:normal; line-height:120%; text-decoration:none;">&nbsp;</span></p><p style="direction:ltr; text-align:start; text-indent:0px; width:340px; display:block;"><span style="baseline-shift:0; dominant-baseline:auto; font-family:Arial; font-size:16px; font-style:normal; font-weight:normal; line-height:120%; text-decoration:none;">We’ve included pictures and paintings of real people and key places to help you feel part of the time and place. As you learn about eclipses, take some time to imagine yourself as a part of this unique time in history.</span></p><p style="direction:ltr; text-align:start; text-indent:0px; width:340px; display:block;"><span style="baseline-shift:0; color:rgb(51, 51, 51); dominant-baseline:auto; font-family:Arial; font-size:16px; font-style:normal; font-weight:normal; line-height:120%; text-decoration:none;">&nbsp;</span></p></div>`;
+
+  const fakeDelta = {
+    ops: [
+      {
+        insert:
+          'This lesson is inspired by actual events in western Europe during the Middle Ages and Renaissance Era. \nDuring this time, new inventions and discoveries changed the world nearly every day.\nWe’ve included pictures and paintings of real people and key places to help you feel part of the time and place. As you learn about eclipses, take some time to imagine yourself as a part of this unique time in history.\n',
+      },
+    ],
+  };
+
   return (
     <Tabs
       className="aa-panel-section-title-bar aa-panel-tabs"
@@ -360,9 +374,31 @@ const RightMenu: React.FC<any> = () => {
       <Tab eventKey={RightPanelTabs.COMPONENT} title="Component" disabled={!currentComponent}>
         {currentComponent && currentComponentData && (
           <div className="component-tab p-3">
+            <Modal
+              show={showTextModal}
+              onHide={() => setShowTextModal(false)}
+              size="lg"
+              aria-labelledby="contained-modal-title-vcenter"
+              centered
+            >
+              <Modal.Header closeButton>
+                <Modal.Title id="contained-modal-title-vcenter">Edit Text</Modal.Title>
+              </Modal.Header>
+              <Modal.Body>
+                <ReactQuill
+                  defaultValue={fakeDelta}
+                  onChange={(content, delta, source, editor) => {
+                    console.log('quill changes', { content, delta, source, editor });
+                  }}
+                />
+              </Modal.Body>
+              <Modal.Footer>
+                <Button onClick={() => setShowTextModal(false)}>Close</Button>
+              </Modal.Footer>
+            </Modal>
             <ButtonToolbar aria-label="Component Tools">
               <ButtonGroup className="me-2" aria-label="First group">
-                <Button>
+                <Button onClick={() => setShowTextModal(true)}>
                   <i className="fas fa-wrench mr-2" />
                 </Button>
                 <Button>
