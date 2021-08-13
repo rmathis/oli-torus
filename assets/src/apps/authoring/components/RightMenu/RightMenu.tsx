@@ -1,5 +1,6 @@
 import { JSONSchema7 } from 'json-schema';
 import { debounce, isEqual } from 'lodash';
+import Delta from 'quill-delta';
 import React, { useCallback, useEffect, useState } from 'react';
 import { Button, ButtonGroup, ButtonToolbar, Modal, Tab, Tabs } from 'react-bootstrap';
 import ReactQuill from 'react-quill';
@@ -16,7 +17,7 @@ import { updateSequenceItemFromActivity } from '../../store/groups/layouts/deck/
 import { savePage } from '../../store/page/actions/savePage';
 import { selectState as selectPageState, updatePage } from '../../store/page/slice';
 import { selectCurrentSelection, setCurrentSelection } from '../../store/parts/slice';
-import { convertJanusToQuill } from '../EditingCanvas/TextFlowHelpers';
+import { convertJanusToQuill, convertQuillToJanus } from '../EditingCanvas/TextFlowHelpers';
 import AccordionTemplate from '../PropertyEditor/custom/AccordionTemplate';
 import ColorPickerWidget from '../PropertyEditor/custom/ColorPickerWidget';
 import CustomFieldTemplate from '../PropertyEditor/custom/CustomFieldTemplate';
@@ -339,6 +340,7 @@ const RightMenu: React.FC<any> = () => {
     if (!currentComponentData) {
       return;
     }
+
     if (currentComponentData.type === 'janus-text-flow') {
       const delta = convertJanusToQuill(currentComponentData.custom.nodes);
       console.log('DELTA FORCE', delta);
@@ -393,6 +395,8 @@ const RightMenu: React.FC<any> = () => {
                   defaultValue={textDelta}
                   onChange={(content, delta, source, editor) => {
                     console.log('quill changes', { content, delta, source, editor });
+                    const janusText = convertQuillToJanus(new Delta(editor.getContents().ops));
+                    console.log('JANUS TEXT', janusText);
                   }}
                 />
               </Modal.Body>
