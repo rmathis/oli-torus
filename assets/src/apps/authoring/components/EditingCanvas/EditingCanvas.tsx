@@ -6,13 +6,21 @@ import { selectCurrentActivityTree } from '../../../delivery/store/features/grou
 import { selectBottomPanel, setRightPanelActiveTab } from '../../store/app/slice';
 import { selectCurrentSelection, setCurrentSelection } from '../../store/parts/slice';
 import { RightPanelTabs } from '../RightMenu/RightMenu';
+import EditorApp from '../WYSIWYG/EditorApp';
 import KonvaStage from './KonvaStage';
+import { selectState as selectPageState, updatePage } from '../../store/page/slice';
+
+// because this is a web component, we need to make sure this is referenced
+// so that it doesn't get tree shook
+// TODO: register it here so that can be true instead?
+console.log({ EditorApp: !!EditorApp });
 
 const EditingCanvas: React.FC = () => {
   const dispatch = useDispatch();
   const bottomPanelState = useSelector(selectBottomPanel);
   const currentActivityTree = useSelector(selectCurrentActivityTree);
   const currentPartSelection = useSelector(selectCurrentSelection);
+  const currentLesson = useSelector(selectPageState);
 
   const [currentActivity] = (currentActivityTree || []).slice(-1);
 
@@ -60,20 +68,22 @@ const EditingCanvas: React.FC = () => {
 
   console.log('EC: RENDER', { layers });
 
+  const [themeUrl, customThemeUrl] = currentLesson?.additionalStylesheets || [];
+
   return (
     <React.Fragment>
       <section className="aa-stage">
-        {currentActivity && (
-          <KonvaStage
-            key={currentActivity.id}
-            selected={[currentPartSelection]}
-            background={background}
-            size={{ width, height }}
-            layers={layers}
-            onSelectionChange={handleSelectionChanged}
-            onPositionChange={handlePositionChanged}
-          />
-        )}
+        {currentLesson &&
+          currentActivity &&
+          React.createElement('janus-wysiwyg', {
+            class: 'skin-default',
+            title: currentLesson.title,
+            theme: themeUrl,
+            'custom-theme': customThemeUrl,
+            'custom-css': currentLesson.customCss,
+            custom: JSON.stringify(currentLesson.custom),
+            activityTree: JSON.stringify(currentActivityTree),
+          })}
       </section>
     </React.Fragment>
   );

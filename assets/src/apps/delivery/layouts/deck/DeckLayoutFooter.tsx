@@ -1,7 +1,6 @@
 /* eslint-disable react/prop-types */
 import React, { CSSProperties, useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { CSSSelector } from 'swiper/types/shared';
 import {
   ApplyStateOperation,
   bulkApplyState,

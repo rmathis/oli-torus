@@ -246,10 +246,10 @@ $panel-section-title-bar-color: #e8ebed;
   .aa-stage {
     position: fixed;
     z-index: 100;
-    top: 65px;
+    top: 104px;
     left: 65px;
-    right: 0;
-    bottom: 0;
+    width: 100%;
+    height: 900px;
     overflow: hidden;
     background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAJElEQVQoU2M8cOLif2MdFQZCgPHzl6//CSkCyY8qxBtKRAcPAJ9FJplIpKVIAAAAAElFTkSuQmCC)
       repeat;

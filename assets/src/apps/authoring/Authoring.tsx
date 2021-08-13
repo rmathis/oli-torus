@@ -19,6 +19,8 @@ import {
 import { initializeFromContext } from './store/page/actions/initializeFromContext';
 import { PageContext } from './types';
 
+
+
 export interface AuthoringProps {
   isAdmin: boolean;
   projectSlug: string;
