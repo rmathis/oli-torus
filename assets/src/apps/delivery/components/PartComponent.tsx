@@ -52,6 +52,7 @@ const WebComponent: React.FC<any> = (props) => {
   const [listening, setIsListening] = useState(false);
   useEffect(() => {
     const wcEventHandler = async (e: any) => {
+      /* console.log(`WebComponent event [PC : ${props.id}]`, e); */
       const { payload, callback } = e.detail;
       if (payload.id !== props.id) {
         // because we need to listen to document we'll get all part component events
@@ -67,10 +68,12 @@ const WebComponent: React.FC<any> = (props) => {
       }
     };
     Object.keys(wcEvents).forEach((eventName) => {
+      /* console.log(`[PC : ${props.id}] listening to ${eventName} event`, wcEvents[eventName]); */
       document.addEventListener(eventName, wcEventHandler);
     });
     setIsListening(true);
     return () => {
+      /* console.log(`[PC : ${props.id}] UNMOUNT`); */
       Object.keys(wcEvents).forEach((eventName) => {
         document.removeEventListener(eventName, wcEventHandler);
       });
@@ -83,7 +86,7 @@ const WebComponent: React.FC<any> = (props) => {
     ref,
     id: props.id,
     type: props.type,
-    ...props,
+    /* ...props, */
     model: JSON.stringify(props.model),
     state: JSON.stringify(props.state),
     style: compStyles,

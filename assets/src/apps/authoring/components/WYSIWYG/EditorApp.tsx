@@ -72,8 +72,14 @@ const EditorApp = (props: any) => {
     if (config?.height) {
       styles.height = config.height;
     }
-    const activities = currentActivityTree.map((activity) => (
-      <AuthoringActivityRenderer key={activity.id} activityModel={activity} />
+
+    // only the current activity is editable
+    const activities = currentActivityTree.map((activity, index) => (
+      <AuthoringActivityRenderer
+        key={activity.id}
+        activityModel={activity}
+        editMode={index === currentActivityTree.length - 1}
+      />
     ));
     return (
       <div className="content" style={styles}>

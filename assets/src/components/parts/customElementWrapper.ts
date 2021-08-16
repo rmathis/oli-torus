@@ -175,6 +175,7 @@ abstract class ReactCustomElement extends HTMLElement {
   }
 
   dispatch(eventName: string, payload: any) {
+    /* console.log('CUSTOM ELEMENT DISPATCH', { eventName, payload }); */
     return new Promise((resolve, reject) => {
       const callback = (result: any, error: any) => {
         if (error !== undefined) {
@@ -186,6 +187,7 @@ abstract class ReactCustomElement extends HTMLElement {
       this.dispatchEvent(
         new CustomEvent(eventName, {
           bubbles: true,
+          composed: true,
           detail: { callback, payload },
         }),
       );

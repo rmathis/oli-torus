@@ -13,6 +13,7 @@ interface PartsLayoutRendererProps {
 }
 
 const defaultHandler = async () => {
+  /* console.log('CALLING DEFAULT PARTLAYOUTRENDERER EVENT HANDLER!'); */
   return {
     type: 'success',
     snapshot: {},
