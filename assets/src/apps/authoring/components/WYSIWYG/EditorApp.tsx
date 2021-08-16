@@ -1,5 +1,7 @@
+import chroma from 'chroma-js';
 import register from 'components/parts/customElementWrapper';
-import React from 'react';
+import React, { CSSProperties, useCallback, useEffect, useState } from 'react';
+import AuthoringActivityRenderer from './AuthoringActivityRenderer';
 import DeckLayoutHeader from './DeckLayoutHeader';
 
 const EditorApp = (props: any) => {
@@ -11,6 +13,75 @@ const EditorApp = (props: any) => {
   if (props.customTheme) {
     stylesheets.push(props.customTheme);
   }
+
+  const [currentActivityTree, setCurrentActivityTree] = useState<any[]>([]);
+  useEffect(() => {
+    if (props.activities) {
+      try {
+        const tree = JSON.parse(props.activities);
+        setCurrentActivityTree(tree);
+      } catch (e) {
+        console.error(`Error parsing activity tree: ${e}`);
+      }
+    }
+  }, [props.activities]);
+
+  const renderActivities = useCallback(() => {
+    if (!currentActivityTree || !currentActivityTree.length) {
+      return <div>loading...</div>;
+    }
+    const [currentActivity] = currentActivityTree.slice(-1);
+    const config = currentActivity.content.custom;
+    const styles: CSSProperties = {
+      width: config?.width || 1300,
+    };
+    if (config?.palette) {
+      if (config.palette.useHtmlProps) {
+        styles.backgroundColor = config.palette.backgroundColor;
+        styles.borderColor = config.palette.borderColor;
+        styles.borderWidth = config.palette.borderWidth;
+        styles.borderStyle = config.palette.borderStyle;
+        styles.borderRadius = config.palette.borderRadius;
+      } else {
+        styles.borderWidth = `${
+          config?.palette?.lineThickness ? config?.palette?.lineThickness + 'px' : '1px'
+        }`;
+        styles.borderRadius = '10px';
+        styles.borderStyle = 'solid';
+        styles.borderColor = `rgba(${
+          config?.palette?.lineColor || config?.palette?.lineColor === 0
+            ? chroma(config?.palette?.lineColor).rgb().join(',')
+            : '255, 255, 255'
+        },${config?.palette?.lineAlpha})`;
+        styles.backgroundColor = `rgba(${
+          config?.palette?.fillColor || config?.palette?.fillColor === 0
+            ? chroma(config?.palette?.fillColor).rgb().join(',')
+            : '255, 255, 255'
+        },${config?.palette?.fillAlpha})`;
+      }
+    }
+    if (config?.x) {
+      styles.left = config.x;
+    }
+    if (config?.y) {
+      styles.top = config.y;
+    }
+    if (config?.z) {
+      styles.zIndex = config.z || 0;
+    }
+    if (config?.height) {
+      styles.height = config.height;
+    }
+    const activities = currentActivityTree.map((activity) => (
+      <AuthoringActivityRenderer key={activity.id} activityModel={activity} />
+    ));
+    return (
+      <div className="content" style={styles}>
+        {activities}
+      </div>
+    );
+  }, [currentActivityTree]);
+
   return (
     <>
       <style>
@@ -35,9 +106,7 @@ const EditorApp = (props: any) => {
         <div className="stageContainer columnRestriction">
           {props.customCss && <style>{props.customCss}</style>}
           <div id="stage-stage">
-            <div className="stage-content-wrapper">
-              <p>content goes here</p>
-            </div>
+            <div className="stage-content-wrapper">{renderActivities()}</div>
           </div>
         </div>
         <div
@@ -57,6 +126,6 @@ const EditorApp = (props: any) => {
 
 export default EditorApp;
 
-register(EditorApp, 'janus-wysiwyg', ['theme', 'custom-theme', 'custom-css', 'activityTree'], {
+register(EditorApp, 'janus-wysiwyg', ['theme', 'custom-theme', 'custom-css', 'activities'], {
   shadow: true,
 });

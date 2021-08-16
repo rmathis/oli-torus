@@ -4,7 +4,10 @@ import { AdaptiveModelSchema } from './schema';
 import * as ActivityTypes from '../types';
 import { AuthoringElement, AuthoringElementProps } from '../AuthoringElement';
 
-const Adaptive = (props: AuthoringElementProps<AdaptiveModelSchema>) => <p>Adaptive</p>;
+const Adaptive = (props: AuthoringElementProps<AdaptiveModelSchema>) => {
+  console.log('adaptive authoring', props);
+  return <p>Adaptive</p>;
+};
 
 export class AdaptiveAuthoring extends AuthoringElement<AdaptiveModelSchema> {
   render(mountPoint: HTMLDivElement, props: AuthoringElementProps<AdaptiveModelSchema>) {

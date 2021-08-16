@@ -82,7 +82,7 @@ const EditingCanvas: React.FC = () => {
             'custom-theme': customThemeUrl,
             'custom-css': currentLesson.customCss,
             custom: JSON.stringify(currentLesson.custom),
-            activityTree: JSON.stringify(currentActivityTree),
+            activities: JSON.stringify(currentActivityTree),
           })}
       </section>
     </React.Fragment>

@@ -19,8 +19,6 @@ import {
 import { initializeFromContext } from './store/page/actions/initializeFromContext';
 import { PageContext } from './types';
 
-
-
 export interface AuthoringProps {
   isAdmin: boolean;
   projectSlug: string;
@@ -74,7 +72,7 @@ const Authoring: React.FC<AuthoringProps> = (props: AuthoringProps) => {
     dispatch(setInitialConfig(appConfig));
 
     if (props.content) {
-      dispatch(initializeFromContext(props.content));
+      dispatch(initializeFromContext({ context: props.content, config: appConfig }));
     }
   }, [props]);
 
