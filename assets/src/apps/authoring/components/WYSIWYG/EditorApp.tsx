@@ -6,7 +6,7 @@ import DeckLayoutHeader from './DeckLayoutHeader';
 
 const EditorApp = (props: any) => {
   console.log('EA', { props });
-  const stylesheets: string[] = [];
+  const stylesheets: string[] = ['https://cdn.quilljs.com/1.3.6/quill.snow.css'];
   if (props.theme) {
     stylesheets.push(props.theme);
   }

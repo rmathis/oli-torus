@@ -7,6 +7,9 @@ import {
   subscribeToNotification,
 } from '../../../apps/delivery/components/NotificationContext';
 import { parseBoolean } from 'utils/common';
+import ReactQuill from 'react-quill';
+import { convertJanusToQuill, convertQuillToJanus } from 'apps/authoring/components/WYSIWYG/TextFlowHelpers';
+import { Delta } from 'quill';
 
 export interface MarkupTree {
   tag: string;
@@ -253,13 +256,15 @@ const AuthorTextFlow: React.FC<any> = (props: any) => {
   if (ready) {
     if (parseBoolean(props.selected)) {
       toRender = (
-        <div
-          id={props.id}
-          data-janus-type={props.type}
-          className={customCssClass}
-          style={styles}
-        >
-          {JSON.stringify(tree)}
+        <div>
+          <ReactQuill
+            defaultValue={convertJanusToQuill(tree)}
+            onChange={(content, delta, source, editor) => {
+              console.log('quill changes', { content, delta, source, editor });
+              const janusText = convertQuillToJanus(new Delta(editor.getContents().ops));
+              console.log('JANUS TEXT', janusText);
+            }}
+          />
         </div>
       );
     } else {
