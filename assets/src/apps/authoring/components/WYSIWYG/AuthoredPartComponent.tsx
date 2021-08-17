@@ -109,6 +109,7 @@ const AuthoredPartComponent: React.FC<any> = (props) => {
     model: JSON.stringify(props.model),
     state: JSON.stringify(props.state),
     style: compStyles,
+    class: props.model.customCssClass || '',
   };
 
   if (props.selected) {
