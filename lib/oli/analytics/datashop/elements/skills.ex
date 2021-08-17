@@ -14,7 +14,7 @@ defmodule Oli.Analytics.Datashop.Elements.Skills do
   def setup(%{publication: publication, skill_ids: skill_ids}) do
     skill_ids
     |> Enum.map(&element(:skill, [make_skill_element(publication, &1)]))
-    |> Enum.filter(&(&1 != nil))
+    |> Enum.filter(&(!is_nil(&1)))
   end
 
   defp make_skill_element(publication, skill_id) do
