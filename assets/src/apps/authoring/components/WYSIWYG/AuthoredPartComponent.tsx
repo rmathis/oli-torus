@@ -1,13 +1,13 @@
 /* eslint-disable react/prop-types */
-import React, { useContext, useEffect, useRef, useState, CSSProperties } from 'react';
 import {
   NotificationContext,
   NotificationType,
   subscribeToNotification,
-} from './NotificationContext';
-import Unknown from './UnknownComponent';
+} from 'apps/delivery/components/NotificationContext';
+import Unknown from 'apps/delivery/components/UnknownComponent';
+import React, { CSSProperties, useContext, useEffect, useRef, useState } from 'react';
 
-const WebComponent: React.FC<any> = (props) => {
+const AuthoredPartComponent: React.FC<any> = (props) => {
   const pusherContext = useContext(NotificationContext);
 
   // TODO: build from configuration instead
@@ -90,6 +90,16 @@ const WebComponent: React.FC<any> = (props) => {
     }
   };
 
+  // we need to position the host element instead of the contents
+  if (props.model) {
+    compStyles.width = props.model.width;
+    compStyles.height = props.model.height;
+    compStyles.position = 'absolute';
+    compStyles.left = props.model.x;
+    compStyles.top = props.model.y;
+    compStyles.zIndex = props.model.z;
+  }
+
   const webComponentProps = {
     ref,
     id: props.id,
@@ -101,6 +111,10 @@ const WebComponent: React.FC<any> = (props) => {
     style: compStyles,
   };
 
+  if (props.selected) {
+    console.log('WC SELECTED', { props, webComponentProps });
+  }
+
   const wcTagName = props.type;
   if (!wcTagName || !customElements.get(wcTagName)) {
     const unknownProps = { ...webComponentProps, ref: undefined };
@@ -111,4 +125,4 @@ const WebComponent: React.FC<any> = (props) => {
   return listening ? React.createElement(wcTagName, webComponentProps) : null;
 };
 
-export default WebComponent;
+export default AuthoredPartComponent;

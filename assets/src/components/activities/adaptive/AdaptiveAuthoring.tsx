@@ -1,5 +1,5 @@
+import DraggablePartsLayoutRenderer from 'apps/authoring/components/WYSIWYG/DraggablePartsLayoutRenderer';
 import { NotificationContext } from 'apps/delivery/components/NotificationContext';
-import PartsLayoutRenderer from 'apps/delivery/components/PartsLayoutRenderer';
 import EventEmitter from 'events';
 import React, { useState } from 'react';
 import ReactDOM from 'react-dom';
@@ -11,15 +11,29 @@ const Adaptive = (props: AuthoringElementProps<AdaptiveModelSchema>) => {
   const [pusher, _setPusher] = useState(new EventEmitter());
   console.log('adaptive authoring', props);
   const parts = props.model?.content?.partsLayout || [];
+  const [selectedPart, setSelectedPart] = useState('');
 
   const handlePartInit = async (payload: any) => {
     console.log('AUTHOR PART INIT', payload);
     return { snapshot: {} };
   };
 
+  const handlePartClick = (payload: any) => {
+    console.log('AUTHOR PART CLICK', payload);
+    if (props.editMode) {
+      setSelectedPart(payload.id);
+    }
+  };
+
   return parts && parts.length ? (
     <NotificationContext.Provider value={pusher}>
-      <PartsLayoutRenderer parts={parts} onPartInit={handlePartInit} />
+      <DraggablePartsLayoutRenderer
+        parts={parts}
+        selectedPart={selectedPart}
+        editable={props.editMode}
+        onPartInit={handlePartInit}
+        onPartClick={handlePartClick}
+      />
     </NotificationContext.Provider>
   ) : null;
 };

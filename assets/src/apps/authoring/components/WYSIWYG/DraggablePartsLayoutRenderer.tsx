@@ -1,10 +1,13 @@
 /* eslint-disable react/prop-types */
 import { ActivityState, PartComponentDefinition } from 'components/activities/types';
 import React from 'react';
-import PartComponent from './PartComponent';
+import Draggable from 'react-draggable';
+import AuthoredPartComponent from './AuthoredPartComponent';
 
-interface PartsLayoutRendererProps {
+interface DraggablePartsLayoutRendererProps {
   parts: PartComponentDefinition[];
+  editable: boolean;
+  selectedPart: string;
   state?: ActivityState;
   onPartInit?: any;
   onPartReady?: any;
@@ -21,9 +24,11 @@ const defaultHandler = async () => {
   };
 };
 
-const PartsLayoutRenderer: React.FC<PartsLayoutRendererProps> = ({
+const DraggablePartsLayoutRenderer: React.FC<DraggablePartsLayoutRendererProps> = ({
   parts,
   state = {},
+  editable = false,
+  selectedPart,
   onPartInit = defaultHandler,
   onPartReady = defaultHandler,
   onPartSave = defaultHandler,
@@ -40,6 +45,7 @@ const PartsLayoutRenderer: React.FC<PartsLayoutRendererProps> = ({
         const partProps = {
           id: partDefinition.id,
           type: partDefinition.type,
+          selected: partDefinition.id === selectedPart,
           model: partDefinition.custom,
           state,
           onInit: onPartInit,
@@ -48,10 +54,21 @@ const PartsLayoutRenderer: React.FC<PartsLayoutRendererProps> = ({
           onSubmit: onPartSubmit,
           onPartClick,
         };
-        return <PartComponent key={partDefinition.id} {...partProps} />;
+        return (
+          <Draggable
+            key={partDefinition.id}
+            disabled={!editable || partProps.selected}
+            handle=".handle"
+            defaultPosition={{ x: 0, y: 0 }}
+            grid={[25, 25]}
+            scale={1}
+          >
+            <AuthoredPartComponent {...partProps} />
+          </Draggable>
+        );
       })}
     </React.Fragment>
   );
 };
 
-export default PartsLayoutRenderer;
+export default DraggablePartsLayoutRenderer;

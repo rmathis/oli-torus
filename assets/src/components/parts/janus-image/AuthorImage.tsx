@@ -11,7 +11,7 @@ interface ImageModel extends JanusAbsolutePositioned, JanusCustomCss {
   alt: string;
 }
 
-const Image: React.FC<PartComponentProps<ImageModel>> = (props) => {
+const AuthorImage: React.FC<PartComponentProps<ImageModel>> = (props) => {
   const [state, setState] = useState<any[]>(Array.isArray(props.state) ? props.state : []);
   const [model, setModel] = useState<any>(typeof props.model === 'object' ? props.model : {});
   const [ready, setReady] = useState<boolean>(false);
@@ -108,12 +108,12 @@ const Image: React.FC<PartComponentProps<ImageModel>> = (props) => {
 
   const { x, y, z, width, height, src, alt, customCssClass } = model;
   const imageStyles: CSSProperties = {
-    position: 'absolute',
+    /* position: 'absolute',
     top: y,
-    left: x,
+    left: x, */
     width,
     height,
-    zIndex: z,
+   /*  zIndex: z, */
   };
 
   return ready ? (
@@ -129,4 +129,4 @@ const Image: React.FC<PartComponentProps<ImageModel>> = (props) => {
 
 export const tagName = 'janus-image';
 
-export default Image;
+export default AuthorImage;
