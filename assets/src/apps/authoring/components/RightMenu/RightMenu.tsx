@@ -361,7 +361,6 @@ const RightMenu: React.FC<any> = () => {
   const [showTextModal, setShowTextModal] = useState(false);
 
   const [textDelta, setTextDelta] = useState<any>(null);
-  const fakeValue = `<div id="a:98137:q:1535559999043:482:2" data-janus-type="janus-text-flow" class="" style="position: absolute; top: 190px; left: 330px; z-index: 2; overflow-wrap: break-word; line-height: inherit; width: 340px; border-width: 0.1px; border-style: solid; border-color: rgba(255, 255, 255, 0); background-color: rgba(255, 255, 255, 0);"><p style="direction:ltr; text-align:start; text-indent:0px; width:340px; display:block;"><span style="baseline-shift:0; color:rgb(51, 51, 51); dominant-baseline:auto; font-family:Arial; font-size:16px; font-style:normal; font-weight:normal; line-height:120%; text-decoration:none;">This lesson is inspired by actual events in western Europe during the Middle Ages and Renaissance Era. </span></p><p style="direction:ltr; text-align:start; text-indent:0px; width:340px; display:block;"><span style="baseline-shift:0; dominant-baseline:auto; font-family:Arial; font-size:16px; font-style:normal; font-weight:normal; line-height:120%; text-decoration:none;">&nbsp;</span></p><p style="direction:ltr; text-align:start; text-indent:0px; width:340px; display:block;"><span style="baseline-shift:0; dominant-baseline:auto; font-family:Arial; font-size:16px; font-style:normal; font-weight:normal; line-height:120%; text-decoration:none;">During this time, new inventions and discoveries changed the world nearly every day.</span></p><p style="direction:ltr; text-align:start; text-indent:0px; width:340px; display:block;"><span style="baseline-shift:0; dominant-baseline:auto; font-family:Arial; font-size:16px; font-style:normal; font-weight:normal; line-height:120%; text-decoration:none;">&nbsp;</span></p><p style="direction:ltr; text-align:start; text-indent:0px; width:340px; display:block;"><span style="baseline-shift:0; dominant-baseline:auto; font-family:Arial; font-size:16px; font-style:normal; font-weight:normal; line-height:120%; text-decoration:none;">We’ve included pictures and paintings of real people and key places to help you feel part of the time and place. As you learn about eclipses, take some time to imagine yourself as a part of this unique time in history.</span></p><p style="direction:ltr; text-align:start; text-indent:0px; width:340px; display:block;"><span style="baseline-shift:0; color:rgb(51, 51, 51); dominant-baseline:auto; font-family:Arial; font-size:16px; font-style:normal; font-weight:normal; line-height:120%; text-decoration:none;">&nbsp;</span></p></div>`;
 
   useEffect(() => {
     if (!currentComponentData) {
@@ -419,6 +418,27 @@ const RightMenu: React.FC<any> = () => {
               </Modal.Header>
               <Modal.Body>
                 <ReactQuill
+                  modules={{
+                    toolbar: [
+                      ['bold', 'italic', 'underline', 'strike'], // toggled buttons
+                      ['blockquote', 'code-block'],
+
+                      [{ header: 1 }, { header: 2 }], // custom button values
+                      [{ list: 'ordered' }, { list: 'bullet' }],
+                      [{ script: 'sub' }, { script: 'super' }], // superscript/subscript
+                      [{ indent: '-1' }, { indent: '+1' }], // outdent/indent
+                      [{ direction: 'rtl' }], // text direction
+
+                      [{ size: ['small', false, 'large', 'huge'] }], // custom dropdown
+                      [{ header: [1, 2, 3, 4, 5, 6, false] }],
+
+                      [{ color: [] }, { background: [] }], // dropdown with defaults from theme
+                      [{ font: [] }],
+                      [{ align: [] }],
+
+                      ['clean'], // remove formatting button
+                    ],
+                  }}
                   defaultValue={textDelta}
                   onChange={(content, delta, source, editor) => {
                     console.log('quill changes', { content, delta, source, editor });
@@ -435,13 +455,7 @@ const RightMenu: React.FC<any> = () => {
             <ButtonToolbar aria-label="Component Tools">
               <ButtonGroup className="me-2" aria-label="First group">
                 <Button onClick={() => setShowTextModal(true)}>
-                  <i className="fas fa-wrench mr-2" />
-                </Button>
-                <Button>
-                  <i className="fas fa-cog mr-2" />
-                </Button>
-                <Button>
-                  <i className="fas fa-copy mr-2" />
+                  <i className="fas fa-edit mr-2" />
                 </Button>
                 <CompJsonEditor
                   onChange={handleEditComponentJson}

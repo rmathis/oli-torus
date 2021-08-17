@@ -1,5 +1,6 @@
 import { saveActivity } from 'apps/authoring/store/activities/actions/saveActivity';
-import React, { useCallback } from 'react';
+import React, { CSSProperties, useCallback, useEffect, useState } from 'react';
+import { Button, ButtonGroup, ButtonToolbar } from 'react-bootstrap';
 import { useDispatch, useSelector } from 'react-redux';
 import { clone } from 'utils/common';
 import { selectCurrentActivityTree } from '../../../delivery/store/features/groups/selectors/deck';
@@ -28,6 +29,31 @@ const EditingCanvas: React.FC = () => {
     id: activity.id,
     parts: activity.content.partsLayout || [],
   }));
+
+  const [toolbarConfig, setToolbarConfig] = useState<CSSProperties>({ display: 'none' });
+  useEffect(() => {
+    console.log('SELECTION CHANGE EFFECT?', { currentPartSelection });
+    if (!currentPartSelection || !currentActivityTree) {
+      return;
+    }
+    let partDef;
+    for (let i = 0; i < currentActivityTree.length; i++) {
+      const activity = currentActivityTree[i];
+      partDef = activity.content?.partsLayout.find((part: any) => part.id === currentPartSelection);
+      if (partDef) {
+        break;
+      }
+    }
+    console.log('part selected', { partDef });
+    if (partDef) {
+      setToolbarConfig({
+        display: 'block',
+        position: 'absolute',
+        top: partDef.custom.y - 16,
+        left: partDef.custom.x,
+      });
+    }
+  }, [currentPartSelection, currentActivityTree]);
 
   const handleSelectionChanged = (selected: string[]) => {
     const [first] = selected;
@@ -63,6 +89,16 @@ const EditingCanvas: React.FC = () => {
   return (
     <React.Fragment>
       <section className="aa-stage">
+        <ButtonToolbar style={toolbarConfig} aria-label="Component Tools">
+          <ButtonGroup className="me-2" aria-label="First group">
+            <Button>
+              <i className="fas fa-edit mr-2" />
+            </Button>
+            <Button variant="danger">
+              <i className="fas fa-trash mr-2" />
+            </Button>
+          </ButtonGroup>
+        </ButtonToolbar>
         {currentActivity && (
           <KonvaStage
             key={currentActivity.id}

@@ -36,7 +36,7 @@ const CompJsonEditor: React.FC<JsonEditorProps> = (props) => {
   return (
     <Fragment>
       <Button onClick={() => setDisplayEditor(true)}>
-        <i className="fas fa-edit mr-2" />
+        <i className="fas fa-wrench mr-2" />
       </Button>
       <Modal show={displayEditor} onHide={() => setDisplayEditor(false)}>
         <Modal.Header closeButton={true}>

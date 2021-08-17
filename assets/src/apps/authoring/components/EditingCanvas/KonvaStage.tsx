@@ -1,6 +1,8 @@
 import Konva from 'konva';
 import { isEqual } from 'lodash';
 import React, { useCallback, useEffect, useLayoutEffect, useState } from 'react';
+import { createQuillText } from './KonvaQuill';
+import { convertJanusToQuill } from './TextFlowHelpers';
 
 const textFlowHack = (node: any): any => {
   let nodeText = '';
@@ -122,19 +124,8 @@ const KonvaStage: React.FC<KonvaStageProps> = (props) => {
               if (!part.custom?.nodes) {
                 break;
               }
-              let y = 0;
-              part.custom.nodes.forEach((node: any) => {
-                const text = textFlowHack(node);
-                const textNode = new Konva.Text({
-                  y,
-                  width: part.custom.width,
-                  /* height: part.custom.height, */
-                  text,
-                  fontSize: 16,
-                });
-                y = textNode.height() + y + 1;
-                partGroup.add(textNode);
-              });
+              const quillGroup = createQuillText(convertJanusToQuill(part.custom.nodes), part.custom.width);
+              partGroup.add(quillGroup);
             }
             break;
           default:
@@ -173,7 +164,7 @@ const KonvaStage: React.FC<KonvaStageProps> = (props) => {
 
       stage.on('click tap', (evt: any) => {
         let selectedNode = evt.target;
-        const selectedParent = selectedNode.getParent();
+        let selectedParent = selectedNode.getParent();
         if (selectedNode === stage) {
           tr.nodes([]);
           onSelectionChange([]);
@@ -181,12 +172,17 @@ const KonvaStage: React.FC<KonvaStageProps> = (props) => {
         }
 
         let selectedId = selectedNode.id();
-        if ((!selectedId || selectedNode.getType() !== 'Group') && selectedParent) {
+        while((!selectedId && (selectedParent.getType() !== 'Layer')) {
+          selectedId = selectedParent.id();
+          selectedNode = selectedParent;
+          selectedParent = selectedParent.getParent();
+        }
+        /* if ((!selectedId || selectedNode.getType() !== 'Group') && selectedParent) {
           if (selectedParent.getType() === 'Group') {
             selectedId = selectedParent.id();
             selectedNode = selectedParent;
           }
-        }
+        } */
 
         if (selectedId) {
           if (onSelectionChange) {
