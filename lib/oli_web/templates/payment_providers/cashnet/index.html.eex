@@ -1,0 +1,107 @@
+
+<style>
+  * {
+    box-sizing: border-box;
+  }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 16px;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .payment-content {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-content: center;
+    margin-top: 20%;
+  }
+
+  .summary {
+    width: 30vw;
+    min-width: 500px;
+    align-self: center;
+    box-shadow: 0px 0px 0px 0.5px rgba(50, 50, 93, 0.1),
+      0px 2px 5px 0px rgba(50, 50, 93, 0.1), 0px 1px 1.5px 0px rgba(0, 0, 0, 0.07);
+    border-radius: 7px;
+    padding: 40px;
+  }
+  form {
+    align-self: center;
+  }
+  input {
+    border-radius: 6px;
+    margin-bottom: 10px;
+    padding: 12px;
+    border: 1px solid rgba(50, 50, 93, 0.1);
+    height: 44px;
+    font-size: 16px;
+    width: 100%;
+    background: white;
+  }
+  /* Buttons and links */
+  button {
+    background: #5469d4;
+    color: #ffffff;
+    font-family: Arial, sans-serif;
+    border-radius: 0 0 4px 4px;
+    border: 0;
+    padding: 12px 16px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    display: block;
+    transition: all 0.2s ease;
+    box-shadow: 0px 4px 5.5px 0px rgba(0, 0, 0, 0.07);
+    width: 100%;
+  }
+  button:hover {
+    filter: contrast(115%);
+  }
+  button:disabled {
+    opacity: 0.5;
+    cursor: default;
+  }
+
+  @media only screen and (max-width: 600px) {
+    form {
+      width: 80vw;
+    }
+  }
+</style>
+
+<div class="payment-content">
+
+  <div class="summary">
+    <label>Course Section</label>
+    <input type="text" disabled value="<%= @section.title %>"/>
+
+    <label>User</label>
+    <input type="text" disabled value="<%= @user_name %>"/>
+
+    <label>Amount</label>
+    <input type="text" disabled value="<%= @cost %>"/>
+
+    <hr class="mt-3 mb-3"/>
+
+    <form action="${paymentSettings.checkoutUrl}" method="post" id="cmupayment" target="_blank">
+      <input type="hidden" name="virtual" value="CMU${paymentSettings.storeNumber}"/>
+
+      <input type="hidden" name="signouturl" value="https://${pageContext.request.serverName}${returnPath}"/>
+
+      <input type="hidden" name="eusername" value="${userDetails.user.guid}"/>
+      <input type="hidden" name="fname" value="${userDetails.user.firstName}"/>
+      <input type="hidden" name="lname" value="${userDetails.user.lastName}"/>
+      <input type="hidden" name="email" value="${userDetails.user.email}"/>
+
+      <input type="hidden" name="itemcode1" value="${paymentSettings.storeNumber}-COURSE"/>
+      <input type="hidden" name="itemname1" value="${section.title}"/>
+      <input type="hidden" name="desc1" value="Title: ${section.title} Admit Code: ${section.admitCode}"/>
+      <input type="hidden" name="qty1" value="1"/>
+      <input type="hidden" name="amount1" value="${payment.product.price}"/>
+      <input type="hidden" name="gl1" value="${payment.product.accountNumber}"/>
+
+      <input type="submit" name="submit" value="Proceed to Payment">
+    </form>
+  </div>
+</div>
