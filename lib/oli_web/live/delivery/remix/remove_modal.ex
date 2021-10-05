@@ -8,7 +8,7 @@ defmodule OliWeb.Delivery.Remix.RemoveModal do
 
   def render(%{node: %HierarchyNode{slug: slug, revision: revision}} = assigns) do
     ~L"""
-    <div class="modal fade show" id="delete_<%= slug %>" tabindex="-1" role="dialog" aria-hidden="true" phx-hook="ModalLaunch">
+    <div class="modal fade show" id="delete_<%= slug %>" tabindex="-1" role="dialog" aria-hidden="true" phx-hook="BSModal">
       <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">

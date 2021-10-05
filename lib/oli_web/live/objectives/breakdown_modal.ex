@@ -7,7 +7,7 @@ defmodule OliWeb.Objectives.BreakdownModal do
 
   def render(%{slug: slug} = assigns) do
     ~L"""
-    <div class="modal fade show" id="breakdown_<%= slug %>" tabindex="-1" role="dialog" aria-hidden="true" phx-hook="ModalLaunch">
+    <div class="modal fade show" id="breakdown_<%= slug %>" tabindex="-1" role="dialog" aria-hidden="true" phx-hook="BSModal">
       <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
         <div class="modal-content">
           <%= f = form_for @changeset, "#", [phx_submit: "perform_breakdown", id: "process-breakdown-" <> slug] %>
@@ -51,7 +51,7 @@ defmodule OliWeb.Objectives.BreakdownModal do
               </p>
             </div>
             <div class="modal-footer">
-              <button type="button" class="btn btn-secondary" data-dismiss="modal" phx-click="cancel">Cancel</button>
+              <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
               <button type="submit" class="btn btn-primary" onclick="$('#breakdown_<%= slug %>').modal('hide')">Break down objective</button>
             </div>
           </form>

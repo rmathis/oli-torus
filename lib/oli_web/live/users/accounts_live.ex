@@ -34,8 +34,7 @@ defmodule OliWeb.Accounts.AccountsLive do
        model: model,
        title: "Manage Accounts",
        active: :accounts,
-       selected_author: nil,
-       selected_user: nil
+       modal: nil
      )}
   end
 
@@ -509,6 +508,12 @@ defmodule OliWeb.Accounts.AccountsLive do
   @spec render(any) :: Phoenix.LiveView.Rendered.t()
   def render(%{csrf_token: csrf_token} = assigns) do
     ~L"""
+    <%= case @modal do %>
+      <% nil -> %>
+
+      <% %{component: component, assigns: assigns} -> %>
+        <%= live_component component, assigns %>
+    <% end %>
     <div class="container">
       <div class="row">
         <div class="col-12">

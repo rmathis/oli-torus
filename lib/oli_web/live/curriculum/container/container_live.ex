@@ -6,6 +6,9 @@ defmodule OliWeb.Curriculum.ContainerLive do
   use OliWeb, :live_view
 
   import Oli.Utils, only: [value_or: 2]
+  import OliWeb.Curriculum.Utils
+
+  alias OliWeb.Router.Helpers, as: Routes
 
   alias Oli.Authoring.Editing.ContainerEditor
   alias Oli.Authoring.Course
@@ -30,7 +33,6 @@ defmodule OliWeb.Curriculum.ContainerLive do
   alias Oli.Accounts
   alias Oli.Authoring.Broadcaster.Subscriber
   alias Oli.Resources.Numbering
-  alias OliWeb.Router.Helpers, as: Routes
   alias OliWeb.Common.Breadcrumb
 
   def mount(
@@ -300,6 +302,27 @@ defmodule OliWeb.Curriculum.ContainerLive do
      assign(socket,
        modal: %{component: DeleteModal, assigns: assigns}
      )}
+  end
+
+  def handle_event("delete", %{"slug" => slug}, socket) do
+    %{container: container, project: project, author: author, revision: revision} = socket.assigns
+
+    case ContainerEditor.remove_child(container, project, author, slug) do
+      {:ok, _} ->
+        {:noreply,
+         socket
+         |> assign(modal: nil)
+         |> push_patch(to: Routes.container_path(socket, :index, project.slug, container.slug))}
+
+      {:error, _} ->
+        {:noreply,
+         socket
+         |> assign(modal: nil)
+         |> put_flash(
+           :error,
+           "Could not delete #{resource_type_label(revision)} \"#{revision.title}\""
+         )}
+    end
   end
 
   def handle_event("cancel", _, socket) do
