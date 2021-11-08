@@ -1,11 +1,16 @@
+import ActivityRenderer from 'apps/delivery/components/ActivityRenderer';
+import { selectCurrentActivityTree } from 'apps/delivery/store/features/groups/selectors/deck';
+import { ActivityState } from 'components/activities/types';
 import React, { useState } from 'react';
 import { OverlayTrigger, Popover } from 'react-bootstrap';
-import { ActivityState } from 'components/activities/types';
-import ActivityRenderer from 'apps/delivery/components/ActivityRenderer';
-import { defaultGlobalEnv, evalScript } from '../../../../adaptivity/scripting';
-import { selectPageContent } from '../../store/features/page/slice';
-import { EverAppActivity, getEverAppActivity, udpateAttemptGuid } from './EverApps';
 import { useSelector } from 'react-redux';
+import {
+  defaultGlobalEnv,
+  evalScript,
+  getLocalizedStateSnapshot,
+} from '../../../../adaptivity/scripting';
+import { selectPageContent } from '../../store/features/page/slice';
+import { getEverAppActivity, udpateAttemptGuid } from './EverApps';
 
 // interface EverAppContainerProps {
 //   everApps: any[];
@@ -15,7 +20,24 @@ const EverAppContainer = () => {
   const currentPage = useSelector(selectPageContent);
   const everApps = currentPage?.custom?.everApps;
 
+  const currentActivityTree = useSelector(selectCurrentActivityTree);
+
   console.log('EverApps', everApps);
+
+  const handleEverappActivityReady = React.useCallback(async () => {
+    if (!currentActivityTree) {
+      return; // very bad!
+    }
+    const currentActivityIds = currentActivityTree.map((a) => a.id);
+    return {
+      snapshot: getLocalizedStateSnapshot(currentActivityIds),
+      context: {
+        currentActivity: currentActivityTree[currentActivityTree.length - 1].id,
+        mode: 'VIEWER', // TODO ENUM
+      },
+    };
+  }, [currentActivityTree]);
+
   // const arrowRef = React.createRef(null);
   return (
     <div className={'beagle'} style={{ order: 3 }}>
@@ -60,12 +82,7 @@ const EverAppContainer = () => {
                                 onActivitySubmit={() => {}}
                                 onActivitySavePart={() => {}}
                                 onActivitySubmitPart={() => {}}
-                                onActivityReady={async () => {
-                                  return {
-                                    snapshot: {},
-                                    context: { currentActivity: [] },
-                                  };
-                                }}
+                                onActivityReady={handleEverappActivityReady}
                                 onRequestLatestState={() => {}}
                               />
                             </div>
